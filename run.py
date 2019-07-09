@@ -3,49 +3,33 @@ An experimental app to check for possible ''patterns'' in OPAP's Virtual Footbal
 """
 
 from flask import Flask
-import requests
-import json
-import pymongo
-import os
-import time
-
+from get_matches import get_matches
+from notification import notify
+from db_ops import connect_db, update_db
 
 app = Flask(__name__)
 
+def wrapStringInHTML(body):
+
+    wrapper = """<html>
+    <head>
+    <title>%s</title>
+    </head>
+    <body><p>Add me on Facebook: <a href=\"%s\">%s</a></p><p>%s</p></body>
+    </html>"""
+
+    whole = wrapper % ("Πλιάτσικο v1.0", "https://www.facebook.com/pliachicobot", "Pliachico Botakis", body)
+    return  whole
+
+
+
 @app.route('/')
 def main_routine():
-    live = "false"
-    fromDate = "fromDate=" + "2019-07-07" #time.strftime("%Y-%d-%M")
-    toDate = "toDate=" + "2019-07-07" #time.strftime("%Y-%d-%M")
+    # notify()
+    body = "Θα ενημερώνεσαι για τυχόν *ζεματιστές* εξελίξεις<br>Μαζί θα φέρουμε τη βροχή. Προσεχώς..."
+    return wrapStringInHTML(body)
+# results = get_matches("2019-07-01", "2019-07-09")
+# mydb = connect_db()
+# update_db(results, mydb)
 
-    url = "https://api.opap.gr/sb/sport/virtual_soccer/coupon?locale=el&onlyLive="\
-            + live\
-            + "&marketIds=1%2C18&"\
-            + fromDate + '&'\
-            + toDate
-
-    response = json.loads(requests.get(url).text)
-
-    if "events" in response:
-        matches = response["events"]["content"]
-        entries = []
-        for item in matches:
-            entries.append({"id": item["id"], "time": item["dt"], "result": item["scr"]["EndResult"]})
-
-
-
-# # get mongoDB uri depending on the env
-# if os.environ["PATH"].startswith("/home/konstantinos/"):
-#     import configparser
-#     local_config = configparser.ConfigParser()
-#     local_config.read('data.ini')
-#     mongodb_uri = local_config["CREDS"]["mongodb"]
-# else:
-#     mongodb_uri = os.environ["MONGODB"]
-#
-# myclient = pymongo.MongoClient(mongodb_uri)
-# mydb = myclient["pliachicoDB"]
-# mycol = mydb["matches"]
-# x = mycol.insert_many(entries)
-
-    print(entries)
+# print(results)
