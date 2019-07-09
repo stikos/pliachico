@@ -7,7 +7,7 @@ from get_matches import get_matches
 from notification import notify
 from db_ops import connect_db, update_db
 
-app = Flask(__name__)
+pliachico = Flask(__name__)
 
 def wrapStringInHTML(body):
 
@@ -23,7 +23,7 @@ def wrapStringInHTML(body):
 
 
 
-@app.route('/')
+@pliachico.route('/')
 def main_routine():
     # notify()
     body = "Θα ενημερώνεσαι για τυχόν *ζεματιστές* εξελίξεις<br>Μαζί θα φέρουμε τη βροχή. Προσεχώς..."
