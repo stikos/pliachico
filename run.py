@@ -2,6 +2,7 @@
 An experimental app to check for possible ''patterns'' in OPAP's Virtual Football results
 """
 
+from celery import Celery
 from flask import Flask
 import schedule
 import time
@@ -9,6 +10,24 @@ from db_ops import connect_db
 from routines import retrieval
 
 pliachico = Flask(__name__)
+
+# TODO
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend=app.config['CELERY_RESULT_BACKEND'],
+        broker=app.config['CELERY_BROKER_URL']
+    )
+    celery.conf.update(app.config)
+
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
 
 
 def wrapStringInHTML(body, latest_update):
@@ -34,11 +53,11 @@ def greet():
     latest_update = open("latest.entry", 'r').read()
     return wrapStringInHTML(body, latest_update)
 
-print("Initiated")
-mydb = connect_db()
-retrieval(mydb)
-schedule.every(5).minutes.do(retrieval, mydb)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# print("Initiated")
+# mydb = connect_db()
+# retrieval(mydb)
+# schedule.every(5).minutes.do(retrieval, mydb)
+#
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
