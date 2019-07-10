@@ -1,5 +1,4 @@
 import json
-import time
 import requests
 
 
@@ -11,15 +10,10 @@ def get_matches(fromDateIn=None, toDateIn=None):
     :param toDateIn: The date up to when we want to retrieve matches
     :return: The retrieved matches in a list of dicts
     """
-    live = "false"
-    fromDate = "fromDate=" + time.strftime("%Y-%d-%M") if not fromDateIn else "fromDate=" + fromDateIn
-    toDate = "toDate=" + time.strftime("%Y-%d-%M") if not toDateIn else "toDate=" + toDateIn
+    url = "https://api.opap.gr/sb/sport/virtual_soccer/coupon?locale=el&onlyLive=false&marketIds=1%2C18"
 
-    url = "https://api.opap.gr/sb/sport/virtual_soccer/coupon?locale=el&onlyLive=" \
-          + live \
-          + "&marketIds=1%2C18&" \
-          + fromDate + '&' \
-          + toDate
+    if fromDateIn is not None and toDateIn is not None:
+        url += '&' + "fromDate=" + fromDateIn + '&' + "toDate=" + toDateIn
 
     response = json.loads(requests.get(url).text)
 
@@ -27,6 +21,11 @@ def get_matches(fromDateIn=None, toDateIn=None):
         matches = response["events"]["content"]
         entries = []
         for item in matches:
-            entries.append({"id": item["id"], "time": item["dt"], "result": item["scr"]["EndResult"]})
+            entries.append({"id": item["id"],
+                            "time": item.get("dt", None),
+                            "result": item["scr"]["EndResult"]}) if "scr" in item else None
 
-    return entries
+        return entries
+
+    else:
+        raise ValueError
